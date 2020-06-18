@@ -7,16 +7,18 @@ namespace PowerRequest
     /// <summary>
     ///  PowerRequest.
     /// </summary>
-    class PowerRequest1 : IDisposable
+    internal class PowerRequestWrapper : IDisposable
     {
         /// <summary>
         ///  Constructor, PowerCreateRequest().
         /// </summary>
         /// <param name="reason"></param>
-        public PowerRequest1(string reason)
+        public PowerRequestWrapper(PowerRequestType requestType, string reason)
         {
+            this.RequestType = requestType;
             var context = new NativeMethods.REASON_CONTEXT_Simple(reason);
             this.powerRequest = NativeMethods.PowerCreateRequest(ref context);
+
         }
 
         /// <summary>
@@ -24,15 +26,12 @@ namespace PowerRequest
         /// </summary>
         public void Set()
         {
-            if (this.powerRequest == null)
+            if (!IsValid)
             {
                 throw new InvalidOperationException();
             }
 
-            if (!NativeMethods.PowerSetRequest(this.powerRequest, ToNativeRequestType(RequestType)))
-            {
-
-            }
+            IsSet = NativeMethods.PowerSetRequest(this.powerRequest, ToNativeRequestType(RequestType));
         }
 
         /// <summary>
@@ -40,16 +39,35 @@ namespace PowerRequest
         /// </summary>
         public void Clear()
         {
-            if (this.powerRequest == null)
+            if (!IsValid)
             {
                 throw new InvalidOperationException();
             }
+            if (!IsSet)
+            {
+                return;
+            }
 
+            IsSet = false;
             if (!NativeMethods.PowerClearRequest(this.powerRequest, ToNativeRequestType(RequestType)))
             {
 
             }
         }
+
+        /// <summary>
+        ///  PowerRequestType to be set;
+        /// </summary>
+        public PowerRequestType RequestType
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        ///  PowerRequest handle.
+        /// </summary>
+        private PowerRequestHandle powerRequest;
 
         /// <summary>
         ///  Whether Set() or Clear() can work.
@@ -60,25 +78,20 @@ namespace PowerRequest
         }
 
         /// <summary>
-        ///  PowerRequestType to be set;
+        ///  true if PowerSetRequest() is successfully called.
         /// </summary>
-        public PowerRequestType RequestType
+        public bool IsSet
         {
             get;
-            set;
+            private set;
         }
-
-        /// <summary>
-        ///  PowerRequest handle.
-        /// </summary>
-        private PowerRequestHandle powerRequest;
 
         /// <summary>
         ///  convert PowerRequestType to Win32 API POWER_REQUEST_TYPE.
         /// </summary>
         /// <param name="requestType"></param>
         /// <returns></returns>
-        private NativeMethods.POWER_REQUEST_TYPE ToNativeRequestType(PowerRequestType requestType)
+        private static NativeMethods.POWER_REQUEST_TYPE ToNativeRequestType(PowerRequestType requestType)
         {
             return (NativeMethods.POWER_REQUEST_TYPE)(UInt32)requestType;
         }
@@ -100,11 +113,15 @@ namespace PowerRequest
         #endregion
     }
 
+    /// <summary>
+    ///  Power Request Type.
+    /// </summary>
+    /// <seealso cref="NativeMethods.POWER_REQUEST_TYPE"/>
     public enum PowerRequestType
     {
-        PowerRequestDisplayRequired,
-        PowerRequestSystemRequired,
-        PowerRequestAwayModeRequired,
-        PowerRequestExecutionRequired
+        DisplayRequired,
+        SystemRequired,
+        AwayModeRequired,
+        ExecutionRequired
     }
 }

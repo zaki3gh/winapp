@@ -6,6 +6,9 @@ using System.Configuration;
 
 namespace PowerRequest
 {
+    /// <summary>
+    ///  P/Invoke definitions for PowerRequest.
+    /// </summary>
     internal partial class NativeMethods
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -54,8 +57,14 @@ namespace PowerRequest
         }
     }
 
+    /// <summary>
+    ///  PowerRequest handle.
+    /// </summary>
     internal class PowerRequestHandle : Microsoft.Win32.SafeHandles.SafeHandleMinusOneIsInvalid
     {
+        /// <summary>
+        ///  Constructor.
+        /// </summary>
         public PowerRequestHandle() : base(true)
         {
         }

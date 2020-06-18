@@ -10,5 +10,6 @@
         <RadioButton x:Name="noreq" Checked="RadioButton_Checked">No special request</RadioButton>
         <RadioButton x:Name="display"  Checked="RadioButton_Checked">Keep display on</RadioButton>
         <RadioButton x:Name="system" Checked="RadioButton_Checked">Keep power on</RadioButton>
+        <Button Click="Button_Click">Turn off display</Button>
     </StackPanel>
 </Window>

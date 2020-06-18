@@ -23,39 +23,44 @@ namespace PowerRequest
         public MainWindow()
         {
             InitializeComponent();
-
-            this.powerRequest = new PowerRequest1("powerrequestapp");
         }
 
-        private PowerRequest1 powerRequest;
+        private PowerRequestWrapper? _displayRequest;
+        private PowerRequestWrapper? _systemRequest;
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            if (!this.powerRequest.IsValid)
-            {
-                return;
-            }
-
             if (this.noreq.IsChecked.GetValueOrDefault())
             {
-                this.powerRequest.Clear();
+                _displayRequest?.Clear();
+                _systemRequest?.Clear();
             }
             else if (this.display.IsChecked.GetValueOrDefault())
             {
-                this.powerRequest.Clear();
-                this.powerRequest.RequestType = PowerRequestType.PowerRequestDisplayRequired;
-                this.powerRequest.Set();
+                if (_displayRequest == null)
+                {
+                    _displayRequest = new PowerRequestWrapper(PowerRequestType.DisplayRequired, "powerrequestapp");
+                }
+                _displayRequest?.Set();
             }
             else if (this.system.IsChecked.GetValueOrDefault())
             {
-                this.powerRequest.Clear();
-                this.powerRequest.RequestType = PowerRequestType.PowerRequestSystemRequired;
-                this.powerRequest.Set();
+                if (_systemRequest == null)
+                {
+                    _systemRequest = new PowerRequestWrapper(PowerRequestType.SystemRequired, "powerrequestapp");
+                }
+                _systemRequest?.Set();
             }
             else
             {
-                this.powerRequest.Clear();
+                _displayRequest?.Clear();
+                _systemRequest?.Clear();
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            MonitorPower.TurnOffDisplay();
         }
     }
 }
