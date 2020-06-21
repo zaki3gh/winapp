@@ -4,7 +4,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Configuration;
 
-namespace PowerRequest
+namespace mylib.WinApi
 {
     /// <summary>
     ///  P/Invoke definitions for PowerRequest.
@@ -22,9 +22,6 @@ namespace PowerRequest
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern public bool PowerSetRequest(PowerRequestHandle PowerRequest, POWER_REQUEST_TYPE RequestType);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern public bool CloseHandle(IntPtr handle);
 
         /// <summary>
         ///  REASON_CONTEXT structre, Flags=POWER_REQUEST_CONTEXT_SIMPLE_STRING.
@@ -34,6 +31,7 @@ namespace PowerRequest
         {
             UInt32 Version;
             UInt32 Flags;
+            [MarshalAs(UnmanagedType.LPWStr)]
             String SimpleReasonString;
 
             public REASON_CONTEXT_Simple(String reason)

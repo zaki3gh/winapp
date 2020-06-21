@@ -13,87 +13,57 @@ namespace PowerRequest
         ///  Constructor, PowerCreateRequest().
         /// </summary>
         /// <param name="reason"></param>
-        public PowerRequestWrapper(PowerRequestType requestType, string reason)
+        /// <exception cref="System.ComponentModel.Win32Exception">PowerCreateRequest failed.</exception>
+        public PowerRequestWrapper(string reason)
         {
-            this.RequestType = requestType;
-            var context = new NativeMethods.REASON_CONTEXT_Simple(reason);
-            this.powerRequest = NativeMethods.PowerCreateRequest(ref context);
-
+            var context = new mylib.WinApi.NativeMethods.REASON_CONTEXT_Simple(reason);
+            _powerRequest = mylib.WinApi.NativeMethods.PowerCreateRequest(ref context);
+            if (_powerRequest == null)
+            {
+                throw new System.ComponentModel.Win32Exception(System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+            }
         }
 
         /// <summary>
         ///  PowerSetRequest().
         /// </summary>
-        public void Set()
+        public bool Set(PowerRequestType requestType)
         {
-            if (!IsValid)
+            if (_powerRequest.IsClosed)
             {
-                throw new InvalidOperationException();
+                throw new ObjectDisposedException("_powerrequest");
             }
 
-            IsSet = NativeMethods.PowerSetRequest(this.powerRequest, ToNativeRequestType(RequestType));
+            return mylib.WinApi.NativeMethods.PowerSetRequest(_powerRequest, ToNativeRequestType(requestType));
         }
 
         /// <summary>
         ///  PowerClearRequest().
         /// </summary>
-        public void Clear()
+        public bool Clear(PowerRequestType requestType)
         {
-            if (!IsValid)
+            if (_powerRequest.IsClosed)
             {
-                throw new InvalidOperationException();
-            }
-            if (!IsSet)
-            {
-                return;
+                throw new ObjectDisposedException("_powerrequest");
             }
 
-            IsSet = false;
-            if (!NativeMethods.PowerClearRequest(this.powerRequest, ToNativeRequestType(RequestType)))
-            {
-
-            }
+            return mylib.WinApi.NativeMethods.PowerClearRequest(_powerRequest, ToNativeRequestType(requestType));
         }
 
-        /// <summary>
-        ///  PowerRequestType to be set;
-        /// </summary>
-        public PowerRequestType RequestType
-        {
-            get;
-            private set;
-        }
 
         /// <summary>
         ///  PowerRequest handle.
         /// </summary>
-        private PowerRequestHandle powerRequest;
-
-        /// <summary>
-        ///  Whether Set() or Clear() can work.
-        /// </summary>
-        public bool IsValid
-        {
-            get => this.powerRequest != null;
-        }
-
-        /// <summary>
-        ///  true if PowerSetRequest() is successfully called.
-        /// </summary>
-        public bool IsSet
-        {
-            get;
-            private set;
-        }
+        private mylib.WinApi.PowerRequestHandle _powerRequest;
 
         /// <summary>
         ///  convert PowerRequestType to Win32 API POWER_REQUEST_TYPE.
         /// </summary>
         /// <param name="requestType"></param>
         /// <returns></returns>
-        private static NativeMethods.POWER_REQUEST_TYPE ToNativeRequestType(PowerRequestType requestType)
+        private static mylib.WinApi.NativeMethods.POWER_REQUEST_TYPE ToNativeRequestType(PowerRequestType requestType)
         {
-            return (NativeMethods.POWER_REQUEST_TYPE)(UInt32)requestType;
+            return (mylib.WinApi.NativeMethods.POWER_REQUEST_TYPE)(UInt32)requestType;
         }
 
         #region IDisposable
@@ -107,7 +77,7 @@ namespace PowerRequest
         {
             if (disposing)
             {
-                this.powerRequest?.Dispose();
+                _powerRequest.Dispose();
             }
         }
         #endregion

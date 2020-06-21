@@ -23,38 +23,29 @@ namespace PowerRequest
         public MainWindow()
         {
             InitializeComponent();
+
+            _powerRequest = new PowerRequestWrapper("powerrequestapp");
         }
 
-        private PowerRequestWrapper? _displayRequest;
-        private PowerRequestWrapper? _systemRequest;
+        PowerRequestWrapper _powerRequest;
+
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            if (this.noreq.IsChecked.GetValueOrDefault())
+            if (this.display.IsChecked.GetValueOrDefault())
             {
-                _displayRequest?.Clear();
-                _systemRequest?.Clear();
-            }
-            else if (this.display.IsChecked.GetValueOrDefault())
-            {
-                if (_displayRequest == null)
-                {
-                    _displayRequest = new PowerRequestWrapper(PowerRequestType.DisplayRequired, "powerrequestapp");
-                }
-                _displayRequest?.Set();
+                _powerRequest.Clear(PowerRequestType.SystemRequired);
+                _powerRequest.Set(PowerRequestType.DisplayRequired);
             }
             else if (this.system.IsChecked.GetValueOrDefault())
             {
-                if (_systemRequest == null)
-                {
-                    _systemRequest = new PowerRequestWrapper(PowerRequestType.SystemRequired, "powerrequestapp");
-                }
-                _systemRequest?.Set();
+                _powerRequest.Set(PowerRequestType.SystemRequired);
+                _powerRequest.Clear(PowerRequestType.DisplayRequired);
             }
             else
             {
-                _displayRequest?.Clear();
-                _systemRequest?.Clear();
+                _powerRequest.Clear(PowerRequestType.SystemRequired);
+                _powerRequest.Clear(PowerRequestType.DisplayRequired);
             }
         }
 
